@@ -2,41 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Mitt Arv Blog Platform Design System - Dark Theme */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Dark Theme Base Colors */
+    --background: 222 47% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 222 47% 6%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 222 47% 6%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Brand Colors - Nordic Blue Inspiration */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 4%;
+    --primary-muted: 217 91% 45%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 213 31% 91%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 222 47% 8%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 213 31% 91%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 85% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 222 47% 12%;
+    --input: 222 47% 8%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.5rem;
+    /* Custom Blog Colors */
+    --blog-surface: 222 47% 5%;
+    --blog-surface-hover: 222 47% 7%;
+    --blog-text-primary: 213 31% 91%;
+    --blog-text-secondary: 215 20% 65%;
+    --blog-text-accent: 217 91% 75%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(142 76% 36%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(222 47% 6%) 0%, hsl(222 47% 4%) 100%);
+    --gradient-overlay: linear-gradient(180deg, transparent 0%, hsl(222 47% 4% / 0.8) 100%);
+
+    /* Shadows */
+    --shadow-soft: 0 2px 10px hsl(222 47% 2% / 0.3);
+    --shadow-medium: 0 8px 30px hsl(222 47% 2% / 0.4);
+    --shadow-strong: 0 20px 60px hsl(222 47% 2% / 0.6);
+    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.15);
+
+    /* Animations */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +125,118 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* Blog Card Animations */
+  .blog-card {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:translate-y-[-4px] hover:shadow-[var(--shadow-medium)];
+  }
+
+  .blog-card:hover .blog-card-overlay {
+    @apply opacity-100;
+  }
+
+  .blog-card-overlay {
+    @apply opacity-0 transition-opacity duration-300;
+    background: var(--gradient-overlay);
+  }
+
+  /* Hero Animations */
+  .hero-fade-in {
+    animation: hero-fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .hero-slide-up {
+    animation: hero-slide-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+  }
+
+  /* Button Variants */
+  .btn-hero {
+    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground;
+    @apply px-8 py-4 rounded-lg font-semibold text-lg;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:scale-105 hover:shadow-[var(--shadow-glow)];
+    @apply active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply border border-border bg-transparent text-foreground;
+    @apply px-6 py-3 rounded-lg font-medium;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:bg-muted hover:border-primary/50;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply relative text-muted-foreground hover:text-foreground;
+    @apply transition-colors duration-300;
+  }
+
+  .nav-link::after {
+    @apply content-[''] absolute bottom-0 left-0 w-0 h-0.5;
+    @apply bg-primary transition-all duration-300;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  /* Rich Text Editor Styles */
+  .rich-editor {
+    @apply min-h-[300px] p-4 border border-border rounded-lg;
+    @apply bg-card text-card-foreground;
+    @apply focus-within:ring-2 focus-within:ring-ring;
+  }
+
+  .rich-editor .ql-editor {
+    @apply text-foreground;
+  }
+
+  .rich-editor .ql-toolbar {
+    @apply border-b border-border;
+  }
+}
+
+@keyframes hero-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(217 91% 60% / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px hsl(217 91% 60% / 0.6);
   }
 }
