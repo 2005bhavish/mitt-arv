@@ -8,9 +8,10 @@ import Footer from '@/components/layout/Footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, TrendingUp, Star } from 'lucide-react';
+import { useBlog } from '@/hooks/useBlog';
 
 const Home = () => {
-  const { posts, isLoading } = useSelector((state: RootState) => state.blog);
+  const { posts, loading } = useBlog();
 
   const featuredPosts = posts.slice(0, 3);
   const recentPosts = posts.slice(3);
@@ -53,11 +54,44 @@ const Home = () => {
 
         {/* Featured Posts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {featuredPosts.map((post, index) => (
-            <div key={post.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <BlogCard post={post} />
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="bg-muted rounded-2xl h-64 mb-4"></div>
+                <div className="bg-muted rounded h-4 mb-2"></div>
+                <div className="bg-muted rounded h-4 w-3/4"></div>
+              </div>
+            ))
+          ) : featuredPosts.length > 0 ? (
+            featuredPosts.map((post, index) => {
+              const blogPost = {
+                id: post.id,
+                title: post.title,
+                excerpt: post.excerpt || '',
+                content: post.content,
+                author: { 
+                  name: post.profiles?.display_name || 'Anonymous',
+                  avatar: post.profiles?.avatar_url
+                },
+                publishedAt: post.published_at || post.created_at,
+                readTime: Math.ceil(post.content.length / 200),
+                tags: post.categories?.map(pc => pc.categories.name) || [],
+                slug: post.slug,
+                image: post.featured_image || undefined
+              };
+              return (
+                <div key={post.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <BlogCard post={blogPost} />
+                </div>
+              );
+            })
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">No posts available yet.</p>
+              <p className="text-muted-foreground">Be the first to share your story!</p>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Recent Posts Section */}
@@ -69,11 +103,39 @@ const Home = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {recentPosts.map((post, index) => (
-                <div key={post.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <BlogCard post={post} />
-                </div>
-              ))}
+              {loading ? (
+                // Loading skeleton for recent posts
+                Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="animate-pulse">
+                    <div className="bg-muted rounded-2xl h-64 mb-4"></div>
+                    <div className="bg-muted rounded h-4 mb-2"></div>
+                    <div className="bg-muted rounded h-4 w-3/4"></div>
+                  </div>
+                ))
+              ) : (
+                recentPosts.map((post, index) => {
+                  const blogPost = {
+                    id: post.id,
+                    title: post.title,
+                    excerpt: post.excerpt || '',
+                    content: post.content,
+                    author: { 
+                      name: post.profiles?.display_name || 'Anonymous',
+                      avatar: post.profiles?.avatar_url
+                    },
+                    publishedAt: post.published_at || post.created_at,
+                    readTime: Math.ceil(post.content.length / 200),
+                    tags: post.categories?.map(pc => pc.categories.name) || [],
+                    slug: post.slug,
+                    image: post.featured_image || undefined
+                  };
+                  return (
+                    <div key={post.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <BlogCard post={blogPost} />
+                    </div>
+                  );
+                })
+              )}
             </div>
           </>
         )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,28 +6,48 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { Save, Eye, Upload, X, Tag, Image } from 'lucide-react';
+import { useBlog } from '@/hooks/useBlog';
 
 const CreatePost = () => {
   const navigate = useNavigate();
+  const { createPost, categories, loading: blogLoading } = useBlog();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
     content: '',
-    tags: [] as string[],
     image: '',
-    isDraft: false,
   });
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
 
-  const handleSubmit = (e: React.FormEvent, isDraft = false) => {
+  const handleSubmit = async (e: React.FormEvent, isDraft = false) => {
     e.preventDefault();
-    // Handle post creation logic here
-    console.log('Creating post:', { ...formData, isDraft });
-    // Navigate back to home or to the new post
-    navigate('/');
+    setLoading(true);
+    
+    try {
+      const { error } = await createPost({
+        title: formData.title,
+        content: formData.content,
+        excerpt: formData.excerpt,
+        featured_image: formData.image || null,
+        published: !isDraft,
+        categoryIds: selectedCategories,
+      });
+
+      if (!error) {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error creating post:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -37,33 +57,27 @@ const CreatePost = () => {
     });
   };
 
-  const addTag = () => {
-    if (currentTag.trim() && !formData.tags.includes(currentTag.trim())) {
-      setFormData({
-        ...formData,
-        tags: [...formData.tags, currentTag.trim()],
-      });
-      setCurrentTag('');
+  const addCategory = (categoryId: string) => {
+    if (!selectedCategories.includes(categoryId)) {
+      setSelectedCategories([...selectedCategories, categoryId]);
     }
   };
 
-  const removeTag = (tagToRemove: string) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter(tag => tag !== tagToRemove),
-    });
+  const removeCategory = (categoryId: string) => {
+    setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addTag();
+      // Handle category selection or other actions if needed
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
+        <Header />
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -158,42 +172,45 @@ const CreatePost = () => {
                   </CardContent>
                 </Card>
 
-                {/* Tags */}
+                {/* Categories */}
                 <Card className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Tag className="w-5 h-5" />
-                      Tags
+                      Categories
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex gap-2">
-                      <Input
-                        value={currentTag}
-                        onChange={(e) => setCurrentTag(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Add a tag..."
-                        className="flex-1"
-                      />
-                      <Button type="button" onClick={addTag} variant="outline">
-                        Add
-                      </Button>
-                    </div>
-                    
-                    {formData.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {formData.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                            {tag}
-                            <button
-                              type="button"
-                              onClick={() => removeTag(tag)}
-                              className="hover:text-destructive"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </Badge>
+                    <Select onValueChange={addCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {selectedCategories.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCategories.map((categoryId) => {
+                          const category = categories.find(c => c.id === categoryId);
+                          return category ? (
+                            <Badge key={categoryId} variant="secondary" className="flex items-center gap-1">
+                              {category.name}
+                              <button
+                                type="button"
+                                onClick={() => removeCategory(categoryId)}
+                                className="hover:text-destructive"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </Badge>
+                          ) : null;
+                        })}
                       </div>
                     )}
                   </CardContent>
@@ -202,18 +219,23 @@ const CreatePost = () => {
                 {/* Actions */}
                 <Card className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
                   <CardContent className="pt-6 space-y-3">
-                    <Button type="submit" className="btn-hero w-full">
+                    <Button 
+                      type="submit" 
+                      className="btn-hero w-full"
+                      disabled={loading || blogLoading}
+                    >
                       <Eye className="w-4 h-4 mr-2" />
-                      Publish Post
+                      {loading ? 'Publishing...' : 'Publish Post'}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       className="w-full"
                       onClick={(e) => handleSubmit(e as any, true)}
+                      disabled={loading || blogLoading}
                     >
                       <Save className="w-4 h-4 mr-2" />
-                      Save as Draft
+                      {loading ? 'Saving...' : 'Save as Draft'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -223,8 +245,9 @@ const CreatePost = () => {
         </div>
       </div>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </ProtectedRoute>
   );
 };
 
