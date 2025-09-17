@@ -1,22 +1,22 @@
 import { useState, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { loginStart, loginSuccess, loginFailure, logout } from '@/store/slices/authSlice';
 import { toast } from '@/hooks/use-toast';
+import { RootState } from '@/store';
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
         setLoading(false);
 
         if (session?.user) {
@@ -35,7 +35,6 @@ export const useAuth = () => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
       setLoading(false);
     });
 
