@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_writers: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          id: string
+          last_seen: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          last_seen?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          last_seen?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string | null
@@ -159,7 +186,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_inactive_writers: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_writer_activity: {
+        Args: { avatar_url?: string; display_name: string; user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
