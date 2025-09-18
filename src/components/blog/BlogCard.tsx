@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, User, Clock, Tag } from 'lucide-react';
+import { Calendar, User, Clock, Tag, Edit } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface BlogPost {
   id: string;
@@ -17,6 +18,7 @@ interface BlogPost {
   tags: string[];
   image?: string;
   slug: string;
+  isDraft?: boolean;
 }
 
 interface BlogCardProps {
@@ -44,11 +46,29 @@ const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div className="blog-card-overlay absolute inset-0" />
+            {post.isDraft && (
+              <div className="absolute top-3 right-3">
+                <Badge variant="secondary" className="bg-background/80 text-foreground">
+                  <Edit className="w-3 h-3 mr-1" />
+                  Draft
+                </Badge>
+              </div>
+            )}
           </div>
         )}
 
         {/* Content */}
         <div className="p-6 space-y-4">
+          {/* Draft Badge for posts without images */}
+          {post.isDraft && !post.image && (
+            <div className="mb-2">
+              <Badge variant="secondary" className="text-xs">
+                <Edit className="w-3 h-3 mr-1" />
+                Draft
+              </Badge>
+            </div>
+          )}
+
           {/* Tags */}
           {post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">

@@ -10,7 +10,11 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CreatePost from "./pages/CreatePost";
 import About from "./pages/About";
+import Profile from "./pages/Profile";
+import PostDetail from "./pages/PostDetail";
+import EditPost from "./pages/EditPost";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -25,8 +29,24 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/create" element={<CreatePost />} />
+            <Route path="/create" element={
+              <ProtectedRoute>
+                <CreatePost />
+              </ProtectedRoute>
+            } />
             <Route path="/about" element={<About />} />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile/:userId" element={<Profile />} />
+            <Route path="/post/:slug" element={<PostDetail />} />
+            <Route path="/edit/:postId" element={
+              <ProtectedRoute>
+                <EditPost />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
