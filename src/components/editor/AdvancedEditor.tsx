@@ -232,7 +232,7 @@ const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
       {/* Content Editor */}
       <div className="space-y-2">
         <Label className="text-lg font-semibold">Content</Label>
-        <div className="border rounded-lg overflow-hidden bg-background">
+        <div className="border rounded-lg overflow-hidden bg-background min-h-[450px]">
           <ReactQuill
             theme="snow"
             value={content}
@@ -240,6 +240,7 @@ const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
             modules={modules}
             formats={formats}
             placeholder="Start writing your story..."
+            className="h-full"
             style={{
               height: '400px',
               marginBottom: '42px'

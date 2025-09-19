@@ -4,9 +4,9 @@ import { PenTool, Heart, Github, Twitter, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-blog-surface border-t border-border mt-20">
+    <footer className="bg-card/30 backdrop-blur-sm border-t border-border mt-20">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2 group">
@@ -88,8 +88,8 @@ const Footer = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-muted-foreground text-sm">
+        <div className="border-t border-border mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+          <p className="text-muted-foreground text-sm text-center sm:text-left">
             © 2024 Mitt Arv. All rights reserved.
           </p>
           <div className="flex items-center space-x-1 text-muted-foreground text-sm">

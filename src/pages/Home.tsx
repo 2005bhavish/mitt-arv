@@ -252,7 +252,11 @@ const Home = () => {
                       Write New Story
                     </Link>
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.open('/profiles', '_blank')}
+                  >
                     <Users className="w-4 h-4 mr-2" />
                     Browse Writers
                   </Button>

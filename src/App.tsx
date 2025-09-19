@@ -6,13 +6,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "@/store";
 import Home from "./pages/Home";
+import About from "./pages/About";
+import CreatePost from "./pages/CreatePost";
+import EditPost from "./pages/EditPost";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import CreatePost from "./pages/CreatePost";
-import About from "./pages/About";
 import Profile from "./pages/Profile";
 import PostDetail from "./pages/PostDetail";
-import EditPost from "./pages/EditPost";
+import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -42,12 +43,12 @@ const App = () => (
             } />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/post/:slug" element={<PostDetail />} />
-            <Route path="/edit/:postId" element={
+            <Route path="/edit/:id" element={
               <ProtectedRoute>
                 <EditPost />
               </ProtectedRoute>
             } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/categories" element={<Categories />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

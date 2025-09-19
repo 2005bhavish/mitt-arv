@@ -19,6 +19,9 @@ import {
   MessageCircle,
   Eye
 } from 'lucide-react';
+import CommentsSection from '@/components/blog/CommentsSection';
+import PostReactions from '@/components/blog/PostReactions';
+import ShareButton from '@/components/ui/share-button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -276,10 +279,13 @@ const PostDetail = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={handleShare}>
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </Button>
+                  <ShareButton
+                    url={window.location.href}
+                    title={post.title}
+                    text={post.excerpt || 'Check out this story'}
+                    variant="outline"
+                    size="sm"
+                  />
                   
                   {isAuthor && (
                     <>
@@ -353,6 +359,12 @@ const PostDetail = () => {
             </CardContent>
           </Card>
 
+          {/* Post Reactions */}
+          <PostReactions postId={post.id} />
+
+          {/* Comments Section */}
+          <CommentsSection postId={post.id} />
+
           {/* Author Bio */}
           <Card className="border-0 bg-card/50 backdrop-blur-sm">
             <CardContent className="p-6">
@@ -374,11 +386,20 @@ const PostDetail = () => {
                   <p className="text-muted-foreground mt-1">
                     Writer and storyteller sharing experiences and insights.
                   </p>
-                  <Button variant="outline" size="sm" className="mt-3" asChild>
-                    <Link to={`/profile/${post.author_id}`}>
-                      View Profile
-                    </Link>
-                  </Button>
+                  <div className="flex items-center gap-2 mt-3">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/profile/${post.author_id}`}>
+                        View Profile
+                      </Link>
+                    </Button>
+                    <ShareButton
+                      url={`${window.location.origin}/profile/${post.author_id}`}
+                      title={`${post.profiles?.display_name || 'Author'}'s Profile`}
+                      text={`Check out ${post.profiles?.display_name || 'this author'}'s profile and stories`}
+                      variant="outline"
+                      size="sm"
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
