@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -22,7 +22,8 @@ import {
   Settings,
   Camera,
   Save,
-  X
+  X,
+  Upload
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useBlog } from '@/hooks/useBlog';
@@ -55,6 +56,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<Partial<Profile>>({});
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = !userId || userId === user?.id;
 
@@ -146,6 +149,89 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    if (!user || !profile) return;
+
+    try {
+      setUploadingAvatar(true);
+
+      // Create file path with user ID
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Upload file to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, {
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setProfile({ ...profile, avatar_url: publicUrl });
+      setEditedProfile({ ...editedProfile, avatar_url: publicUrl });
+
+      toast({
+        title: "Avatar Updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: "Upload Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      handleAvatarUpload(file);
+    }
+  };
+
   const transformPostForCard = (post: Post) => ({
     id: post.id,
     title: post.title,
@@ -234,13 +320,28 @@ const Profile = () => {
                     </AvatarFallback>
                   </Avatar>
                   {isOwnProfile && (
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="absolute bottom-0 right-0 rounded-full shadow-lg"
-                    >
-                      <Camera className="w-4 h-4" />
-                    </Button>
+                    <>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="absolute bottom-0 right-0 rounded-full shadow-lg"
+                        onClick={handleAvatarClick}
+                        disabled={uploadingAvatar}
+                      >
+                        {uploadingAvatar ? (
+                          <Upload className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Camera className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                    </>
                   )}
                 </div>
 
