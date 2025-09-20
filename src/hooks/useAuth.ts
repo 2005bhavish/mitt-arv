@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,20 +12,58 @@ export const useAuth = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
 
+  // Function to sync user data from profiles table
+  const syncUserProfile = useCallback(async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (profile && session) {
+        dispatch(loginSuccess({
+          id: userId,
+          name: profile.display_name || session.user.email || 'Anonymous User',
+          email: session.user.email || '',
+          avatar: profile.avatar_url || session.user.user_metadata?.avatar_url
+        }));
+      }
+    } catch (error) {
+      console.error('Error syncing user profile:', error);
+    }
+  }, [dispatch, session]);
+
+  // Function to refresh user data (can be called after profile updates)
+  const refreshUser = useCallback(async () => {
+    if (session?.user?.id) {
+      await syncUserProfile(session.user.id);
+    }
+  }, [session, syncUserProfile]);
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setLoading(false);
 
         if (session?.user) {
+          // First set basic auth data, then sync with profile
           dispatch(loginSuccess({
             id: session.user.id,
             name: session.user.user_metadata?.display_name || session.user.email || 'Anonymous User',
             email: session.user.email || '',
             avatar: session.user.user_metadata?.avatar_url
           }));
+          
+          // Then sync with profile data to get latest updates
+          await syncUserProfile(session.user.id);
         } else {
           dispatch(logout());
         }
@@ -33,13 +71,16 @@ export const useAuth = () => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
+      if (session?.user) {
+        await syncUserProfile(session.user.id);
+      }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [dispatch]);
+  }, [dispatch, syncUserProfile]);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     dispatch(loginStart());
@@ -209,5 +250,6 @@ export const useAuth = () => {
     signIn,
     signInWithGoogle,
     signOut,
+    refreshUser,
   };
 };

@@ -48,7 +48,7 @@ type Post = Tables<'posts'> & {
 const Profile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { fetchUserPosts } = useBlog();
   
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -135,6 +135,10 @@ const Profile = () => {
 
       setProfile({ ...profile, ...editedProfile });
       setIsEditing(false);
+      
+      // Refresh user data across the app
+      await refreshUser();
+      
       toast({
         title: "Profile Updated",
         description: "Your profile has been updated successfully.",
@@ -184,6 +188,9 @@ const Profile = () => {
       // Update local state
       setProfile({ ...profile, avatar_url: publicUrl });
       setEditedProfile({ ...editedProfile, avatar_url: publicUrl });
+
+      // Refresh user data across the app
+      await refreshUser();
 
       toast({
         title: "Avatar Updated",
