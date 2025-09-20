@@ -432,13 +432,13 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
       {user ? (
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={user.avatar || ''} />
-                <AvatarFallback>
-                  {(user.name || 'U').charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="flex items-start gap-3">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={user.avatar || ''} />
+                  <AvatarFallback>
+                    {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               <div className="flex-1 space-y-3">
                 <Textarea
                   placeholder="Share your thoughts..."

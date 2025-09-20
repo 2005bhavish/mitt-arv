@@ -67,7 +67,7 @@ const Profile = () => {
         .from('profiles')
         .select('*')
         .eq('id', profileId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setProfile(data);
